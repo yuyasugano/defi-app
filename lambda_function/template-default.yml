@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Parameters: 
+  ApiKey:
+    Type: String
+  TwitterConsumerKey:
+    Type: String
+  TwitterConsumerSecret:
+    Type: String
+  TwitterAccessToken:
+    Type: String
+  TwitterAccessSecret:
+    Type: String 
+Globals:
+  Function:
+    Runtime: python3.7
+    Timeout: 300
+    MemorySize: 128
+Resources:
+  DefiApplication:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.7
+      Timeout: 300
+      MemorySize: 128
+      Environment:
+        Variables:
+          API_KEY: !Ref ApiKey
+          TWITTER_CONSUMER_KEY: !Ref TwitterConsumerKey
+          TWITTER_CONSUMER_SECRET: !Ref TwitterConsumerSecret
+          TWITTER_ACCESS_TOKEN: !Ref TwitterAccessToken
+          TWITTER_ACCESS_SECRET: !Ref TwitterAccessSecret
+      Events:
+        InvokePeriodicRates:
+          Type: Schedule
+          Properties:
+            Input: '{"operation": "rates", "token": "DAI"}'
+            Schedule: cron(0 0-23/3 * * ? *)  # every 3 hours
+        InvokePeriodicPrices:
+          Type: Schedule
+          Properties:
+            Input: '{"operation": "prices"}'
+            Schedule: cron(0 0-23/3 * * ? *)  # every 3 hours
+        InvokeWeeklyGraph:
+          Type: Schedule
+          Properties:
+            Input: '{"operation": "draws"}'
+            Schedule: cron(0 9 ? * MON *)     # every Monday 9am
+      Layers:
+        - arn:aws:lambda:<region>:<your account>:layer:my-Python37-Pandas112:1
+        - arn:aws:lambda:<region>:<your account>:layer:my-Python37-Matplotlib310:2

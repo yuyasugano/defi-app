@@ -4,6 +4,7 @@ import json
 import tweepy
 import requests
 from defipulse import DefiPulse
+from subprocess import call
 
 # Data Preprocessing and Feature Engineering
 consumer_key = os.environ.get('TWITTER_CONSUMER_KEY', 'ap-northeast-1')
@@ -58,12 +59,35 @@ def prices():
     except Exception as e:
         print(e)
 
+def draws(period='1w'):
+    obj = DefiPulse()
+    # projects, names = obj.getProjects()
+    # tokens = names[0:10] # only top 10 tokens
+
+    path = obj.drawPercent(period)
+    # initialize tweepy instance
+    try:
+        auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+        auth.set_access_token(access_token, access_secret)
+        api = tweepy.API(auth)
+
+        if os.path.exists(path):
+            api.update_with_media(filename=path, status='Weekly Total Value Lock change')
+        else:
+            print('empty tweet')
+    except Exception as e:
+        print(e)
+
+    call('rm -rf /tmp/*', shell=True)
+
 def lambda_handler(event, context):
     if event['operation'] == 'rates':
         token = event['token']
         rates(token)
     elif event['operation'] == 'prices':
         prices()
+    elif event['operation'] == 'draws':
+        draws()
 
 # call lambda_handler
 if __name__ == "__main__":
