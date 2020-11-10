@@ -45,22 +45,31 @@ class DefiPulse(object):
             df = pd.concat([df, self.getData(period, name)], axis=1, sort=True, join='outer')
         return df
 
-    def drawPercent(self, period):
-        df = self.getDefiData(period)
+    def getSpecificDefiData(self, tokens, period):
+        df = pd.DataFrame()
+        for token in tokens:
+            df = pd.concat([df, self.getData(period, token)], axis=1, sort=True, join='outer')
+        return df
+
+    def drawPercent(self, tokens, period):
+        df = self.getSpecificDefiData(tokens, period)
         df = df.loc[:, df.columns.str.contains('tvlUSD')]
-        pct = df.iloc[:, 0:10]/df.iloc[0, 0:10]
+        df /= df.loc[df.index[0]]
 
         now = datetime.datetime.utcnow()
-        path = '/tmp/' + 'tvlchange_' + now.strftime('%Y%m%d_%H%M%S') + '.png'
+        path = '/tmp/' + 'weeklyTVLUSD_' + now.strftime('%Y%m%d_%H%M%S') + '.png'
 
+        import seaborn as sns
+        from matplotlib.dates import DateFormatter
+        sns.set_style('whitegrid')
+        sns.get_palette('Set2', 8, 1.0)
+        sns.set_context(context='paper', font_scale=2, rc={"lines.linewidth":4})
         fig = plt.figure(figsize=(15, 7))
-        ax1 = fig.add_subplot(1, 1, 1)
-        df.plot(ax=ax1)
-        ax1.set_xlabel('Date')
-        ax1.set_ylabel('Percent')
-        ax1.set_title('Weekly Total Value Lock change')
-        plt.savefig(path)
-        plt.close('all')
+        ax = fig.add_subplot(1, 1, 1)
+        ax.set_title('Weekly Total Value Lock change in DefiPulse')
+        ax.xaxis.set_major_formatter(DateFormatter('%d'))
+        sns_plot = sns.lineplot(data=df, dashes=False)
+        sns_plot.savefig(path)
 
         return path
 
@@ -73,3 +82,47 @@ class DefiPulse(object):
             return rates
         else:
             return None
+
+    def getLendingOutstanding(self, token):
+        api_url = '{0}/GetLendingProjects?token={1}'.format(api_url_base, token)
+        res = requests.get(api_url, headers=headers)
+
+        if res.status_code == 200:
+            projects = json.loads(res.content.decode('utf-8'))
+            names = [project['name'] for project in projects]
+            return projects, names
+        else:
+            return None
+
+    def drawDebt(self):
+        projects, names = self.getLendingOutstanding(API_KEY)
+        debtUSD = [int(round(p['outstanding']['total']['valueUSD'])) for p in projects[:-1]]
+        s = pd.Series(debtUSD, index=names[:-1])
+
+        now = datetime.datetime.utcnow()
+        path = '/tmp/' + 'weeklyDebtUSD_' + now.strftime('%Y%m%d_%H%M%S') + '.png'
+
+        import seaborn as sns
+        sns.set_style('whitegrid')
+        sns.set_palette('Set2', 8, 1.0)
+        sns.set_context(context='paper', font_scale=2, rc={"lines.linewidth": 4})
+        fig = plt.figure(figsize=(15, 7))
+        ax = fig.add_subplot(1, 1, 1)
+        ax.set_title('Defi Debt Outstanding in USD', pad=15)
+        ax = sns.barplot(x=s.index, y=s, data=pd.DataFrame(s))
+        ax.set_xlabel('Defi Protocol')
+        ax.set_ylabel('Debt Outstanding USD')
+        plt.yticks([], [])
+        ax.xaxis.set_label_coords(0.5, -0.1)
+        ax.yaxis.set_label_coords(-0.01, 0.5)
+
+        for p in ax.patches:
+            _x = p.get_x() + p.get_width() / 2
+            _y = p.get_y() + p.get_height()
+            value = int(round(p.get_height()))
+            ax.text(_x, _y+10000000, value, ha="center")
+
+        figure = ax.get_figure()
+        figure.savefig(path)
+        return path
+

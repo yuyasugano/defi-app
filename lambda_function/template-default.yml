@@ -36,17 +36,23 @@ Resources:
           Type: Schedule
           Properties:
             Input: '{"operation": "rates", "token": "DAI"}'
-            Schedule: cron(0 0-23/3 * * ? *)  # every 3 hours
+            Schedule: cron(0 0 * * ? *)  # everyday
         InvokePeriodicPrices:
           Type: Schedule
           Properties:
             Input: '{"operation": "prices"}'
-            Schedule: cron(0 0-23/3 * * ? *)  # every 3 hours
+            Schedule: cron(0 0 * * ? *)  # everyday
         InvokeWeeklyGraph:
           Type: Schedule
           Properties:
             Input: '{"operation": "draws"}'
             Schedule: cron(0 9 ? * MON *)     # every Monday 9am
+        InvokeWeeklyDebts:
+          Type: Schedule
+          Properties:
+            Input: '{"operation": "debts"}'
+            Schedule: cron(0 9 ? * MON *)     # every Monday 9am 
       Layers:
         - arn:aws:lambda:<region>:<your account>:layer:my-Python37-Pandas112:1
-        - arn:aws:lambda:<region>:<your account>:layer:my-Python37-Matplotlib310:2
+        - arn:aws:lambda:<region>:<your account>:layer:my-Python37-Matplotlib310:1
+        - arn:aws:lambda:<region>:<your account>:layer:my-Python37-Seaborn090:1
