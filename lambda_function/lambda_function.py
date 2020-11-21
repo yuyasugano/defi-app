@@ -72,7 +72,7 @@ def draws(period='1w'):
         api = tweepy.API(auth)
 
         if os.path.exists(path):
-            api.update_with_media(filename=path, status='Weekly Total Value Lock change in DefiPulse')
+            api.update_with_media(filename=path, status='Weekly Total Value Lock change in DefiPulse #DeFi #Ethereum')
         else:
             print('empty tweet')
     except Exception as e:
@@ -80,7 +80,7 @@ def draws(period='1w'):
 
     call('rm -rf /tmp/*', shell=True)
 
-def drawDebt():
+def debts():
     obj = DefiPulse()
     path = obj.drawDebt()
 
@@ -91,7 +91,7 @@ def drawDebt():
         api = tweepy.API(auth)
 
         if os.path.exists(path):
-            api.update_with_media(filename=path, status='Weekly Outstanding Debt USD in DefiPulse')
+            api.update_with_media(filename=path, status='Weekly Outstanding Debt USD in DefiPulse #DeFi #Ethereum')
         else:
             print('empty tweet')
     except Exception as e:
@@ -108,7 +108,7 @@ def lambda_handler(event, context):
     elif event['operation'] == 'draws':
         draws()
     elif event['operation'] == 'debts':
-        drawDebt()
+        debts()
 
 # call lambda_handler
 if __name__ == "__main__":

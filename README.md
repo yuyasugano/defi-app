@@ -1,6 +1,6 @@
 # Defi Application with AWS SAM
 
-An application retrieves information from API and post it on Twitter. It's written in Python3.7 and deployed with `AWS SAM`.
+An application retrieves information from API and post it on Twitter. It's written in Python3.7 and deployed with `AWS SAM`. The service is currently working on https://twitter.com/BotDefi
  
 ## sam version
 

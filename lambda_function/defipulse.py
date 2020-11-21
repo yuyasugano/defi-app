@@ -52,9 +52,12 @@ class DefiPulse(object):
         return df
 
     def drawPercent(self, tokens, period):
+        print(tokens)
         df = self.getSpecificDefiData(tokens, period)
         df = df.loc[:, df.columns.str.contains('tvlUSD')]
+        df.dropna(how='any', inplace=True)
         df /= df.loc[df.index[0]]
+        df.tail()
 
         now = datetime.datetime.utcnow()
         path = '/tmp/' + 'weeklyTVLUSD_' + now.strftime('%Y%m%d_%H%M%S') + '.png'
@@ -62,14 +65,15 @@ class DefiPulse(object):
         import seaborn as sns
         from matplotlib.dates import DateFormatter
         sns.set_style('whitegrid')
-        sns.get_palette('Set2', 8, 1.0)
+        sns.set_palette('Set2', 8, 1.0)
         sns.set_context(context='paper', font_scale=2, rc={"lines.linewidth":4})
         fig = plt.figure(figsize=(15, 7))
         ax = fig.add_subplot(1, 1, 1)
         ax.set_title('Weekly Total Value Lock change in DefiPulse')
         ax.xaxis.set_major_formatter(DateFormatter('%d'))
-        sns_plot = sns.lineplot(data=df, dashes=False)
-        sns_plot.savefig(path)
+        ax = sns.lineplot(data=df, dashes=False)
+        figure = ax.get_figure()
+        figure.savefig(path)
 
         return path
 
