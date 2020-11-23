@@ -51,31 +51,19 @@ class DefiPulse(object):
             df = pd.concat([df, self.getData(period, token)], axis=1, sort=True, join='outer')
         return df
 
-    def drawPercent(self, tokens, period):
-        print(tokens)
-        df = self.getSpecificDefiData(tokens, period)
-        df = df.loc[:, df.columns.str.contains('tvlUSD')]
-        df.dropna(how='any', inplace=True)
-        df /= df.loc[df.index[0]]
-        df.tail()
+    def getTVL(self, p):
+        api_url = '{0}/GetHistory?api-key={1}&period={2}'.format(api_url_base, API_KEY, p)
+        res = requests.get(api_url, headers=headers)
 
-        now = datetime.datetime.utcnow()
-        path = '/tmp/' + 'weeklyTVLUSD_' + now.strftime('%Y%m%d_%H%M%S') + '.png'
-
-        import seaborn as sns
-        from matplotlib.dates import DateFormatter
-        sns.set_style('whitegrid')
-        sns.set_palette('Set2', 8, 1.0)
-        sns.set_context(context='paper', font_scale=2, rc={"lines.linewidth":4})
-        fig = plt.figure(figsize=(15, 7))
-        ax = fig.add_subplot(1, 1, 1)
-        ax.set_title('Weekly Total Value Lock change in DefiPulse')
-        ax.xaxis.set_major_formatter(DateFormatter('%d'))
-        ax = sns.lineplot(data=df, dashes=False)
-        figure = ax.get_figure()
-        figure.savefig(path)
-
-        return path
+        if res.status_code == 200:
+            df = pd.read_json(res.content.decode('utf-8'))
+            df.index = df['timestamp']
+            feature_name = ['tvlUSD', 'tvlETH']
+            df = df[feature_name]
+            df.sort_index(inplace=True)
+            return df
+        else:
+            return None
 
     def getRates(self, token):
         api_url = '{0}/GetRates?token={1}&amount=10000'.format(api_url_base, token)
@@ -130,3 +118,24 @@ class DefiPulse(object):
         figure.savefig(path)
         return path
 
+    def drawPercent(self, tokens, period):
+        df = self.getSpecificDefiData(tokens, period)
+        df = df.loc[:, df.columns.str.contains('tvlUSD')]
+        df /= df.loc[df.index[0]]
+
+        now = datetime.datetime.utcnow()
+        path = '/tmp/' + 'weeklyTVLUSD_' + now.strftime('%Y%m%d_%H%M%S') + '.png'
+
+        import seaborn as sns
+        from matplotlib.dates import DateFormatter
+        sns.set_style('whitegrid')
+        sns.get_palette('Set2', 8, 1.0)
+        sns.set_context(context='paper', font_scale=2, rc={"lines.linewidth":4})
+        fig = plt.figure(figsize=(15, 7))
+        ax = fig.add_subplot(1, 1, 1)
+        ax.set_title('Weekly Total Value Lock change in DefiPulse')
+        ax.xaxis.set_major_formatter(DateFormatter('%d'))
+        sns_plot = sns.lineplot(data=df, dashes=False)
+        sns_plot.savefig(path)
+
+        return path

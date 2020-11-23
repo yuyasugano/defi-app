@@ -17,7 +17,7 @@ def rates(token):
     rates = obj.getRates(token)
     names = ['Maker', 'Compound', 'Aave']
 
-    tweet = "Current DeFi Rates for {}\n".format(token)
+    tweet = "Current DeFi Rates for {} #DeFi #Ethereum\n".format(token)
     for name in names:
         tweet = tweet + "{0}, lend: {1}%, borrow: {2}%\n".format(name, rates['rates'][name]['lend']['rate'], rates['rates'][name]['borrow']['rate'])
 
@@ -40,7 +40,7 @@ def prices():
     projects, names = obj.getProjects()
     # print(' '.join([project['name'] for project in projects]))
 
-    tweet = "Current DeFi Top3n in TVL/USD\n"
+    tweet = "Current DeFi Top3 in TVL/USD #DeFi #Ethereum\n"
     for project in projects[:3]:
         tweet = tweet + "Name: {0}, tvlUSD: {1}, USD 1day relative {2}%\n".format(project['name'], project['value']['tvl']['USD']['value'], project['value']['tvl']['USD']['relative_1d'])
         # tweet = 'Name: {0}, tvlUSD: {1}, USD 1day relative {2}%, tvlETH: {3}, ETH 1day relative {4}%'.format(project['name'], project['value']['tvl']['USD']['value'], project['value']['tvl']['USD']['relative_1d'], project['value']['tvl']['ETH']['value'], project['value']['tvl']['ETH']['relative_1d'])
