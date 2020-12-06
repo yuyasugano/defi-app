@@ -3,7 +3,9 @@ import sys
 import json
 import tweepy
 import requests
+import pandas as pd
 from defipulse import DefiPulse
+from coingecko import CoinGecko
 from subprocess import call
 
 # Data Preprocessing and Feature Engineering
@@ -59,6 +61,14 @@ def prices():
     except Exception as e:
         print(e)
 
+def tokenprices(coins, vs_currency, days):
+    obj = CoinGecko()
+    df = pd.DataFrame()
+    for coin in coins:
+        y = obj.getCoinData(coin, vs_currency, days)
+        df = pd.concat([df, y[['Close']]], axis=1, sort=True, join='outer')
+    return df
+
 def draws(period='1w'):
     tokens = ['Uniswap', 'Maker', 'Aave', 'Compound', 'Synthetix']
 
@@ -99,6 +109,22 @@ def debts():
 
     call('rm -rf /tmp/*', shell=True)
 
+def tweet_with_image(path, tweet):
+    # initialize tweepy instance
+    try:
+        auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+        auth.set_access_token(access_token, access_secret)
+        api = tweepy.API(auth)
+
+        if os.path.exists(path):
+            api.update_with_media(filename=path, status=tweet)
+        else:
+            print('empty tweet')
+    except Exception as e:
+        print(e)
+
+    call('rm -rf /tmp/*', shell=True)
+
 def lambda_handler(event, context):
     if event['operation'] == 'rates':
         token = event['token']
@@ -109,6 +135,39 @@ def lambda_handler(event, context):
         draws()
     elif event['operation'] == 'debts':
         debts()
+    elif event['operation'] == 'govtokens':
+        coins = ['bitcoin', 'ethereum', 'maker', 'uniswap', 'compound-governance-token', 'havven', 'aave', 'yearn-finance']
+        tickers = ['BTC', 'ETH', 'MKR', 'UNI', 'COMP', 'SNX', 'AAVE', 'YFI']
+        df = tokenprices(coins, 'usd', '7')
+        df.columns = tickers
+        df.dropna(how='any', inplace=True)
+        df_t = df.copy()
+        df_t /= df.loc[df.index[0]]
+
+        obj = CoinGecko()
+        path = obj.draw(df_t, 'Weekly_Governance_Token_Price_Change')
+        tweet = 'Weekly Governance Token Price Change #DeFi #Ethereum'
+        tweet_with_image(path, tweet)
+    elif event['operation'] == 'corrtokens':
+        coins = ['bitcoin', 'ethereum', 'maker', 'uniswap', 'compound-governance-token', 'havven', 'aave', 'yearn-finance']
+        tickers = ['BTC', 'ETH', 'MKR', 'UNI', 'COMP', 'SNX', 'AAVE', 'YFI']
+        df = tokenprices(coins, 'usd', '7')
+        df.columns = tickers
+        df.dropna(how='any', inplace=True)
+        df_c = df.copy()
+        df_corr = pd.DataFrame()
+        for t in tickers:
+            df_c['pct_' + t] = df_c.loc[:, t].pct_change(1).fillna(df_c[t].pct_change(1).median())
+            df_c['rol_' + t] = df_c.loc[:, 'pct_' + t].rolling(7).sum().fillna(df_c['pct_' + t].rolling(7).sum().median())
+            pd.concat([df_corr, df_c['rol_' + t]], axis=1, sort=True, join='outer')
+
+        df_corr = df_c.loc[:, df_c.columns.str.contains('rol')]
+        df_corr.columns = tickers
+
+        obj = CoinGecko()
+        path = obj.draw(df_corr[7:], 'Rolling_7-days_change_of_DeFi_and_Crypto')
+        tweet = 'Rolling 7 days change of DeFi and Crypto(%) #DeFi #Ethereum'
+        tweet_with_image(path, tweet)
 
 # call lambda_handler
 if __name__ == "__main__":

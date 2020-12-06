@@ -129,7 +129,7 @@ class DefiPulse(object):
         import seaborn as sns
         from matplotlib.dates import DateFormatter
         sns.set_style('whitegrid')
-        sns.get_palette('Set2', 8, 1.0)
+        sns.set_palette('Set2', 8, 1.0)
         sns.set_context(context='paper', font_scale=2, rc={"lines.linewidth":4})
         fig = plt.figure(figsize=(15, 7))
         ax = fig.add_subplot(1, 1, 1)

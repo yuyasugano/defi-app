@@ -52,6 +52,16 @@ Resources:
           Properties:
             Input: '{"operation": "debts"}'
             Schedule: cron(0 0 ? * MON,THU *)
+        InvokeGovTokens:
+          Type: Schedule
+          Properties:
+            Input: '{"operation": "govtokens"}'
+            Schedule: cron(0 0 * * ? *)
+        InvokeCorrTokens:
+          Type: Schedule
+          Properties:
+            Input: '{"operation": "corrtokens"}'
+            Schedule: cron(0 0 * * ? *)
       Layers:
         - arn:aws:lambda:<region>:<your account>:layer:my-Python37-Pandas112:1
         - arn:aws:lambda:<region>:<your account>:layer:my-Python37-Matplotlib310:1
