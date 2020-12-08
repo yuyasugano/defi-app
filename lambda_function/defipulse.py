@@ -135,7 +135,8 @@ class DefiPulse(object):
         ax = fig.add_subplot(1, 1, 1)
         ax.set_title('Weekly Total Value Lock change in DefiPulse')
         ax.xaxis.set_major_formatter(DateFormatter('%d'))
-        sns_plot = sns.lineplot(data=df, dashes=False)
-        sns_plot.savefig(path)
+        ax = sns.lineplot(data=df, dashes=False)
+        figure = ax.get_figure()
+        figure.savefig(path)
 
         return path
