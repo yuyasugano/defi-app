@@ -61,6 +61,34 @@ def prices():
     except Exception as e:
         print(e)
 
+def tvl(coin, vs_currency, days, period='1w'):
+    obj = DefiPulse()
+    tvls = obj.getTVL(period)
+    obj1 = CoinGecko()
+    df = obj1.getCoinVolume(coin, vs_currency, days)
+
+    path1 = obj.drawTVLinUSD(tvls, df)
+    path2 = obj.drawTVLinETH(tvls, df)
+
+    # initialize tweepy instance
+    try:
+        auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+        auth.set_access_token(access_token, access_secret)
+        api = tweepy.API(auth)
+
+        if os.path.exists(path1):
+            api.update_with_media(filename=path1, status='Eth trading volume and Total Value Locked in USD #DeFi #Ethereum')
+        else:
+            print('empty tweet')
+        if os.path.exists(path2):
+            api.update_with_media(filename=path2, status='Eth trading volume and Total Value Locked in ETH #DeFi #Ethereum')
+        else:
+            print('empty tweet')
+    except Exception as e:
+        print(e)
+
+    call('rm -rf /tmp/*', shell=True)
+
 def tokenprices(coins, vs_currency, days):
     obj = CoinGecko()
     df = pd.DataFrame()
@@ -131,6 +159,9 @@ def lambda_handler(event, context):
         rates(token)
     elif event['operation'] == 'prices':
         prices()
+    elif event['operation'] == 'tvl':
+        token = 'ethereum'
+        tvl_usd(token, 'usd', '7')
     elif event['operation'] == 'draws':
         draws()
     elif event['operation'] == 'debts':
@@ -172,4 +203,3 @@ def lambda_handler(event, context):
 # call lambda_handler
 if __name__ == "__main__":
     lambda_handler(json.loads(sys.argv[1]), {})
-

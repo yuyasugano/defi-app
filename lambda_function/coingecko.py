@@ -31,6 +31,40 @@ class CoinGecko(object):
         else:
             return None
 
+    def getCoinVolume(self, ids, vs, days):
+        api_url = '{0}/{1}/market_chart?vs_currency={2}&days={3}'.format(api_url_base, ids, vs, days)
+        res = requests.get(api_url, headers=headers)
+
+        if res.status_code == 200:
+            ret = res.content.decode('utf-8')
+            total_volumes = json.loads(ret)["total_volumes"]
+            df = pd.DataFrame(total_volumes, columns=['timestamp', 'volume'])
+            df['timestamp'] = df['timestamp']/1000
+            df['timestamp'] = df['timestamp'].astype(int)
+            df['timestamp'] = df['timestamp'].map(datetime.datetime.utcfromtimestamp)
+            df.index = df['timestamp']
+            df = df[['volume']]
+            return df
+        else:
+            return None
+
+    def getCoinMarketcap(self, ids, vs, days):
+        api_url = '{0}/{1}/market_chart?vs_currency={2}&days={3}'.format(api_url_base, ids, vs, days)
+        res = requests.get(api_url, headers=headers)
+
+        if res.status_code == 200:
+            ret = res.content.decode('utf-8')
+            market_caps = json.loads(ret)["market_caps"]
+            df = pd.DataFrame(market_caps, columns=['timestamp', 'market'])
+            df['timestamp'] = df['timestamp']/1000
+            df['timestamp'] = df['timestamp'].astype(int)
+            df['timestamp'] = df['timestamp'].map(datetime.datetime.utcfromtimestamp)
+            df.index = df['timestamp']
+            df = df[['market']]
+            return df
+        else:
+            return None
+
     def draw(self, df, title):
 
         now = datetime.datetime.utcnow()

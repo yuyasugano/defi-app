@@ -140,3 +140,85 @@ class DefiPulse(object):
         figure.savefig(path)
 
         return path
+
+    def drawTVLinUSD(self, tvls, df):
+        now = datetime.datetime.utcnow()
+        path = '/tmp/' + 'volumeTVLinUSD_' + now.strftime('%Y%m%d_%H%M%S') + '.png'
+
+        import seaborn as sns
+        import matplotlib as mpl
+        from matplotlib.dates import DateFormatter
+        from matplotlib.ticker import ScalarFormatter
+        mpl.rcParams['axes.spines.bottom'] = False
+        mpl.rcParams['axes.spines.left'] = False
+        mpl.rcParams['axes.spines.right'] = False
+        mpl.rcParams['axes.spines.top'] = False
+        mpl.rcParams['legend.frameon'] = False
+        mpl.rcParams['text.color'] = '#666666'
+        mpl.rcParams['xtick.color'] = '#666666'
+        mpl.rcParams['ytick.color'] = '#666666'
+
+        sns.set_style('whitegrid')
+        sns.set_palette("Set2", 8, 1.0)
+        sns.set_context(context='paper', font_scale=2, rc={"lines.linewidth": 4})
+        fig = plt.figure(figsize=(15, 7))
+        ax1 = fig.add_subplot(1, 1, 1)
+        ax2 = ax1.twinx()
+        c = ax1.plot(tvls.index, tvls['tvlUSD'], alpha=0.8, color='#d62728')
+        l = ax2.bar(df.index, df['volume'], alpha=0.5, color='#ff7f0e', linewidth=1, width=0.03)
+        ax1.legend((*c, *l), ('tvlUSD($)', 'Volume($)'), loc='upper left')
+        ax1.set_ylabel('tvlUSD')
+        ax1.grid(False)
+        ax2.set_ylabel('volume')
+        ax1.set_title('ETH trading volume and Total Value Locked in USD')
+        ax1.xaxis.set_major_formatter(DateFormatter('%m/%d'))
+        ax1.yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
+        ax2.yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
+        ax1.yaxis.set_label_coords(-0.08, 0.5)
+        ax2.yaxis.set_label_coords(1.05, 0.5)
+
+        figure = ax1.get_figure()
+        figure.savefig(path)
+
+        return path
+
+    def drawTVLinETH(self, tvls, df):
+        now = datetime.datetime.utcnow()
+        path = '/tmp/' + 'volumeTVLinETH_' + now.strftime('%Y%m%d_%H%M%S') + '.png'
+
+        import seaborn as sns
+        import matplotlib as mpl
+        from matplotlib.dates import DateFormatter
+        from matplotlib.ticker import ScalarFormatter
+        mpl.rcParams['axes.spines.bottom'] = False
+        mpl.rcParams['axes.spines.left'] = False
+        mpl.rcParams['axes.spines.right'] = False
+        mpl.rcParams['axes.spines.top'] = False
+        mpl.rcParams['legend.frameon'] = False
+        mpl.rcParams['text.color'] = '#666666'
+        mpl.rcParams['xtick.color'] = '#666666'
+        mpl.rcParams['ytick.color'] = '#666666'
+
+        sns.set_style('whitegrid')
+        sns.set_palette("Set2", 8, 1.0)
+        sns.set_context(context='paper', font_scale=2, rc={"lines.linewidth": 4})
+        fig = plt.figure(figsize=(15, 7))
+        ax1 = fig.add_subplot(1, 1, 1)
+        ax2 = ax1.twinx()
+        c = ax1.plot(tvls.index, tvls['tvlETH'], alpha=0.8, color='#a76bcf')
+        l = ax2.bar(df.index, df['volume'], alpha=0.5, color='#ff7f0e', linewidth=1, width=0.03)
+        ax1.legend((*c, *l), ('tvlETH($)', 'Volume($)'), loc='upper left')
+        ax1.set_ylabel('tvlETH')
+        ax1.grid(False)
+        ax2.set_ylabel('volume')
+        ax1.set_title('ETH trading volume and Total Value Locked in ETH')
+        ax1.xaxis.set_major_formatter(DateFormatter('%m/%d'))
+        ax1.yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
+        ax2.yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
+        ax1.yaxis.set_label_coords(-0.08, 0.5)
+        ax2.yaxis.set_label_coords(1.05, 0.5)
+
+        figure = ax1.get_figure()
+        figure.savefig(path)
+
+        return path
