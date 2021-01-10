@@ -205,7 +205,7 @@ class DefiPulse(object):
         fig = plt.figure(figsize=(15, 7))
         ax1 = fig.add_subplot(1, 1, 1)
         ax2 = ax1.twinx()
-        c = ax1.plot(tvls.index, tvls['tvlETH'], alpha=0.8, color='#a76bcf')
+        c = ax1.plot(tvls.index, tvls['tvlETH'], alpha=0.8, color='#8d8b8f')
         l = ax2.bar(df.index, df['volume'], alpha=0.5, color='#ff7f0e', linewidth=1, width=0.03)
         ax1.legend((*c, *l), ('tvlETH($)', 'Volume($)'), loc='upper left')
         ax1.set_ylabel('tvlETH')

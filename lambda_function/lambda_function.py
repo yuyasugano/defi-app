@@ -161,7 +161,7 @@ def lambda_handler(event, context):
         prices()
     elif event['operation'] == 'tvl':
         token = 'ethereum'
-        tvl_usd(token, 'usd', '7')
+        tvl(token, 'usd', '7')
     elif event['operation'] == 'draws':
         draws()
     elif event['operation'] == 'debts':
